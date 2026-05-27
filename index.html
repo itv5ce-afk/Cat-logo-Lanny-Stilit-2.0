@@ -288,6 +288,11 @@
             border-radius: 20px;
             display: inline-block;
         }
+        .panel-access-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -391,7 +396,9 @@
     <button id="fixed-booking-btn" class="booking-fixed-btn" onclick="navigateToBooking()"><i class="fas fa-calendar-check"></i> Agendar Horário</button>
     <div id="fixed-buttons-right" class="fixed-buttons-container"><div id="notification-bubble" class="notification-bubble hidden-fixed" onclick="dismissNotification(event)"><i class="fas fa-bell"></i> Novo Agendamento!</div><button id="fixed-settings-btn" class="settings-fixed-btn" onclick="toggleSettingsMenu()"><i class="fas fa-cog"></i></button></div>
     <div id="drawer-overlay" class="overlay-drawer"></div>
-    <div id="settings-drawer" class="settings-menu"><button class="close-menu-btn" onclick="toggleSettingsMenu()" style="background:none; border:none; font-size:1.5rem; float:right;"><i class="fas fa-times"></i></button><h3>Ajustes</h3><a href="https://wa.me/558599415246?text=Ol%C3%A1" target="_blank" class="whatsapp-trigger-btn">WHATSAPP <i class="fab fa-whatsapp"></i></a><div class="panel-trigger-btn" onclick="navigateToAboutMe()">MINHA EMPRESA</div><div class="panel-trigger-btn" id="login-trigger-btn" onclick="abrirModalLogin()">🔐 LOGIN</div><div id="logout-menu-item" style="display:none;" class="panel-trigger-btn" onclick="logoutFirebase()">🚪 SAIR</div></div>
+    <div id="settings-drawer" class="settings-menu"><button class="close-menu-btn" onclick="toggleSettingsMenu()" style="background:none; border:none; font-size:1.5rem; float:right;"><i class="fas fa-times"></i></button><h3>Ajustes</h3><a href="https://wa.me/558599415246?text=Ol%C3%A1" target="_blank" class="whatsapp-trigger-btn">WHATSAPP <i class="fab fa-whatsapp"></i></a><div class="panel-trigger-btn" onclick="navigateToAboutMe()">MINHA EMPRESA</div>
+        <div id="dynamic-login-logout"></div>
+    </div>
 
     <!-- MODAL LOGIN -->
     <div id="login-modal" class="login-modal-overlay">
@@ -428,15 +435,24 @@
     let companyData = { img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", bio: "Seja bem-vinda ao meu catálogo! Sou especialista em realçar sua beleza natural..." };
     let currentUser = null;
 
+    // Atualiza menu lateral dinamicamente baseado no login
+    function updateLoginLogoutMenu() {
+        const container = document.getElementById('dynamic-login-logout');
+        if(!container) return;
+        if(currentUser) {
+            container.innerHTML = `<div class="panel-trigger-btn panel-access-btn" onclick="navigateToPanel()">👑 PAINEL DE CONTROLE</div>
+                                   <div class="panel-trigger-btn" onclick="logoutFirebase()">🚪 SAIR</div>`;
+        } else {
+            container.innerHTML = `<div class="panel-trigger-btn" id="login-trigger-btn" onclick="abrirModalLogin()">🔐 LOGIN</div>`;
+        }
+    }
+
     // ---------- AUTH ----------
     auth.onAuthStateChanged(async (user) => {
         currentUser = user;
-        const loginBtn = document.getElementById('login-trigger-btn');
-        const logoutItem = document.getElementById('logout-menu-item');
+        updateLoginLogoutMenu();
         const panelUserSpan = document.getElementById('panel-user-email');
         if(user) {
-            loginBtn.innerHTML = `👤 ${user.email?.split('@')[0] || 'Admin'}`;
-            if(logoutItem) logoutItem.style.display = 'flex';
             if(panelUserSpan) panelUserSpan.innerText = user.email || 'Logado';
             // se estiver no painel, recarrega dados
             if(document.getElementById('panel-screen').classList.contains('active')) {
@@ -445,13 +461,10 @@
                 renderFinanceiro();
             }
         } else {
-            loginBtn.innerHTML = '🔐 LOGIN';
-            if(logoutItem) logoutItem.style.display = 'none';
             if(panelUserSpan) panelUserSpan.innerText = '';
             // se o painel estiver aberto, redireciona para main
             if(document.getElementById('panel-screen').classList.contains('active')) {
                 navigateToMain();
-                alert('Faça login para acessar o painel administrativo.');
             }
         }
     });
@@ -561,7 +574,7 @@
         });
     }
     
-    function renderAppointmentsList() { /* igual original */ 
+    function renderAppointmentsList() { 
         const container = document.getElementById('appointments-list');
         if(!container) return;
         container.innerHTML = '';
@@ -586,7 +599,7 @@
     }
     
     async function editarAgendamento(id) {
-        if(!currentUser) { alert('Login necessário para editar.'); return; }
+        if(!currentUser){ alert('Login necessário para editar.'); return; }
         const app = listAppointments.find(a => a.id === id);
         if(!app) return;
         const novoValor = prompt("Informe o VALOR do serviço (R$):", app.valor || "");
@@ -605,7 +618,7 @@
     }
     
     async function concluirAgendamento(id) {
-        if(!currentUser) { alert('Login necessário.'); return; }
+        if(!currentUser){ alert('Login necessário.'); return; }
         const app = listAppointments.find(a => a.id === id);
         if(!app) return;
         let valorFinal = app.valor ? parseFloat(app.valor) : 0;
@@ -623,7 +636,7 @@
         alert("Serviço concluído e registrado no financeiro!");
     }
     
-    async function processBooking() { /* mantido igual */
+    async function processBooking() { 
         const name = document.getElementById('booking-name').value.trim();
         const date = document.getElementById('booking-date').value;
         const time = document.getElementById('booking-time').value;
@@ -649,9 +662,7 @@
         window.open(`https://wa.me/558599415246?text=${encodeURIComponent("Olá Lanny, acabei de fazer um Agendamento no App!!")}`, '_blank');
     }
     
-    // As demais funções (saveMakeupChanges, saveHairChanges, saveCompanyChanges, deletePost, registrarSangria, deletarSangria, deletarConcluido, renderFinanceiro, enviarComprovante, startEdit, abrirGaleria, clearFields, navegação, etc) permanecem idênticas ao código original, porém com verificações opcionais.
-    
-    async function saveMakeupChanges() { if(!currentUser){alert('Login necessário');return;} /* ... resto igual ... */ 
+    async function saveMakeupChanges() { if(!currentUser){alert('Login necessário');return;} 
         const id = document.getElementById('edit-make-id').value;
         const img = document.getElementById('input-img-make1').value;
         const title = document.getElementById('input-title-make1').value;
@@ -686,7 +697,7 @@
     async function registrarSangria() { if(!currentUser){alert('Login necessário');return;} const valor = parseFloat(document.getElementById('sangria-valor').value); const desc = document.getElementById('sangria-desc').value; if(isNaN(valor) || valor <= 0) { alert("Valor inválido"); return; } const newSangria = { valor, desc: desc || "Retirada", data: new Date().toISOString().slice(0,10) }; const docRef = await db.collection('sangrias').add(newSangria); sangrias.push({ id: docRef.id, ...newSangria }); document.getElementById('sangria-valor').value = ''; document.getElementById('sangria-desc').value = ''; renderFinanceiro(); }
     async function deletarSangria(id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Excluir sangria?")) { await db.collection('sangrias').doc(id).delete(); sangrias = sangrias.filter(s => s.id !== id); renderFinanceiro(); } }
     async function deletarConcluido(id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Deletar este serviço concluído?")) { await db.collection('appointments').doc(id).delete(); completedAppointments = completedAppointments.filter(c => c.id !== id); renderFinanceiro(); } }
-    function renderFinanceiro() { /* cópia do original com segurança */ 
+    function renderFinanceiro() { 
         const monthFilter = document.getElementById('finance-month-filter')?.value || '';
         let filteredCompleted = [...completedAppointments];
         if(monthFilter) filteredCompleted = filteredCompleted.filter(c => c.date && c.date.startsWith(monthFilter));
@@ -725,6 +736,7 @@
         toggleFixedButtonsVisibility(true);
         if(document.getElementById('finance-month-filter')) document.getElementById('finance-month-filter').value = new Date().toISOString().slice(0,7);
         loadData();
+        updateLoginLogoutMenu();
     };
 </script>
 </body>
