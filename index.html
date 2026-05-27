@@ -11,10 +11,10 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     
     <style>
+        /* ========== ESTILOS (MANTIDOS) ========== */
         :root {
             --primary: #2c2c2c; 
             --accent: #d4af37;  
@@ -27,134 +27,22 @@
             --success-color: #198754;
             --gold-light: #fdf8e7;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        body {
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .mobile-container {
-            width: 100%;
-            max-width: 450px; 
-            height: 850px;
-            background: var(--bg-light);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-radius: 30px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            border: 8px solid #222;
-        }
-
-        .screen {
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-            display: none;
-            flex-direction: column;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body { background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .mobile-container { width: 100%; max-width: 450px; height: 850px; background: var(--bg-light); box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-radius: 30px; overflow: hidden; position: relative; display: flex; flex-direction: column; border: 8px solid #222; }
+        .screen { width: 100%; height: 100%; overflow-y: auto; display: none; flex-direction: column; }
         .screen.active { display: flex; }
-
-        header {
-            text-align: center;
-            padding: 40px 20px 20px 20px;
-            background: #ffffff;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-        }
+        header { text-align: center; padding: 40px 20px 20px 20px; background: #ffffff; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
         header h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.3rem; font-weight: 400; letter-spacing: 2px; color: var(--primary); margin-bottom: 5px; }
         header p { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 3px; color: var(--accent); font-weight: 500; }
-
-        .fixed-buttons-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 12px;
-            z-index: 30;
-        }
-        .settings-fixed-btn {
-            background: var(--primary);
-            color: white;
-            width: 54px;
-            height: 54px;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-            transition: all 0.2s ease;
-        }
-        .notification-bubble {
-            background: var(--accent);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            box-shadow: 0 3px 12px rgba(212, 175, 55, 0.5);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            animation: pulseNotify 1.2s infinite alternate;
-        }
+        .fixed-buttons-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; z-index: 30; }
+        .settings-fixed-btn { background: var(--primary); color: white; width: 54px; height: 54px; border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: none; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.25); transition: all 0.2s ease; }
+        .notification-bubble { background: var(--accent); color: #fff; padding: 8px 16px; border-radius: 40px; font-size: 0.7rem; font-weight: 700; box-shadow: 0 3px 12px rgba(212, 175, 55, 0.5); cursor: pointer; display: flex; align-items: center; gap: 8px; animation: pulseNotify 1.2s infinite alternate; }
         @keyframes pulseNotify { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.05); opacity: 1; } }
-        .booking-fixed-btn {
-            position: fixed;
-            bottom: 24px;
-            left: 24px;
-            background: var(--accent);
-            color: var(--primary);
-            border: none;
-            padding: 12px 22px;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 30;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .booking-fixed-btn { position: fixed; bottom: 24px; left: 24px; background: var(--accent); color: var(--primary); border: none; padding: 12px 22px; border-radius: 40px; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; box-shadow: 0 6px 18px rgba(0,0,0,0.2); cursor: pointer; z-index: 30; display: flex; align-items: center; gap: 8px; }
         .hidden-fixed { display: none !important; }
-        .tabs {
-            display: flex;
-            justify-content: space-around;
-            background: #fff;
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            border-bottom: 1px solid #eee;
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 15px 20px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            flex: 1;
-        }
+        .tabs { display: flex; justify-content: space-around; background: #fff; position: sticky; top: 0; z-index: 5; border-bottom: 1px solid #eee; }
+        .tab-btn { background: none; border: none; padding: 15px 20px; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; flex: 1; }
         .tab-btn.active { color: var(--primary); border-bottom: 2px solid var(--accent); font-weight: 500; }
         .catalog-content { padding: 20px; flex: 1; }
         .catalog-section { display: none; }
@@ -166,8 +54,6 @@
         .card-info { padding: 15px; text-align: center; }
         .card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 600; }
         .card-price { font-size: 0.95rem; color: var(--accent); font-weight: 500; }
-
-        /* PAINEL, BOTÕES E FINANCEIRO */
         .panel-header { padding: 20px; background: #fff; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 15px; }
         .back-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
         .panel-body { padding: 20px; flex: 1; overflow-y: auto; }
@@ -176,7 +62,6 @@
         .panel-tab-btn.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .panel-section { display: none; }
         .panel-section.active { display: block; }
-
         .appointment-card { background: #fff; border-left: 4px solid var(--accent); padding: 15px; border-radius: 8px; margin-bottom: 12px; }
         .appointment-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 6px; margin-bottom: 8px; flex-wrap: wrap; }
         .appointment-badge { font-size: 0.65rem; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
@@ -189,7 +74,6 @@
         .btn-edit-app { background: var(--edit-color); }
         .btn-finish { background: var(--primary); }
         .btn-add-photo { background: #6c757d; margin-bottom: 15px; width: 100%; justify-content: center; }
-
         .finance-card { background: var(--gold-light); border: 1px solid var(--accent); border-radius: 16px; padding: 18px; margin-bottom: 20px; }
         .finance-title { font-size: 1.3rem; font-weight: bold; color: var(--primary); border-left: 4px solid var(--accent); padding-left: 10px; margin-bottom: 15px; }
         .sangria-box { background: white; border-radius: 12px; padding: 12px; margin: 15px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -199,7 +83,6 @@
         .completed-item { background: #f8f9fa; border-left: 3px solid var(--success-color); padding: 12px; border-radius: 8px; margin-bottom: 10px; }
         .edit-modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; display:flex; justify-content:center; align-items:center; }
         .edit-modal-box { background: white; width: 90%; max-width: 340px; border-radius: 20px; padding: 20px; }
-
         .edit-card, .edit-modal-box { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
@@ -214,85 +97,17 @@
         .panel-trigger-btn { background: var(--bg-light); border: 1px solid var(--accent); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; cursor: pointer; margin-bottom: 12px; }
         .whatsapp-trigger-btn { background: #e8f9ee; border: 1px solid var(--whatsapp-color); color: #128c7e; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; text-decoration: none; margin-bottom: 12px; }
         .manager-item { display: flex; gap: 8px; margin-bottom: 8px; background: #fff; padding: 8px; border-radius: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-        
-        /* Loading indicator */
         .loading { text-align: center; padding: 20px; color: var(--text-muted); }
         .sync-status { font-size: 0.7rem; color: var(--success-color); text-align: center; padding: 5px; background: #e8f5e9; border-radius: 20px; margin: 5px 10px; }
-        
-        /* Login Modal */
-        .login-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 300;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-        .login-modal-card {
-            background: white;
-            width: 90%;
-            max-width: 340px;
-            border-radius: 28px;
-            padding: 28px 22px;
-            text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
-            border: 1px solid var(--accent);
-        }
-        .login-modal-card h3 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.7rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-        }
-        .login-input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 40px;
-            font-size: 0.9rem;
-        }
-        .login-btn {
-            background: var(--accent);
-            color: var(--primary);
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 40px;
-            font-weight: bold;
-            margin-top: 15px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .logout-btn {
-            background: #ccc;
-            color: #333;
-            margin-top: 10px;
-        }
-        .login-error {
-            color: var(--danger-color);
-            font-size: 0.75rem;
-            margin-top: 10px;
-        }
-        .user-status {
-            font-size: 0.7rem;
-            color: var(--success-color);
-            margin-top: 8px;
-            padding: 4px;
-            background: #e9f5e9;
-            border-radius: 20px;
-            display: inline-block;
-        }
-        .panel-access-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-        }
+        .login-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 300; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .login-modal-card { background: white; width: 90%; max-width: 340px; border-radius: 28px; padding: 28px 22px; text-align: center; box-shadow: 0 20px 35px rgba(0,0,0,0.3); border: 1px solid var(--accent); }
+        .login-modal-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; margin-bottom: 20px; color: var(--primary); }
+        .login-input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 40px; font-size: 0.9rem; }
+        .login-btn { background: var(--accent); color: var(--primary); border: none; width: 100%; padding: 12px; border-radius: 40px; font-weight: bold; margin-top: 15px; cursor: pointer; font-size: 1rem; }
+        .logout-btn { background: #ccc; color: #333; margin-top: 10px; }
+        .login-error { color: var(--danger-color); font-size: 0.75rem; margin-top: 10px; }
+        .user-status { font-size: 0.7rem; color: var(--success-color); margin-top: 8px; padding: 4px; background: #e9f5e9; border-radius: 20px; display: inline-block; }
+        .panel-access-btn { background: var(--primary); color: white; border: none; }
     </style>
 </head>
 <body>
@@ -334,7 +149,7 @@
             </div>
             <div id="panel-appointments" class="panel-section active"><div id="appointments-list"></div></div>
             
-            <!-- PAINEL MAKE com ADD FOTOS -->
+            <!-- PAINEL MAKE -->
             <div id="panel-make" class="panel-section">
                 <div class="edit-card">
                     <h4 id="form-make-title">Nova Postagem Maquiagem</h4>
@@ -350,7 +165,7 @@
                 <div id="manager-makeup-list"></div>
             </div>
             
-            <!-- PAINEL CABELO com ADD FOTOS -->
+            <!-- PAINEL CABELO -->
             <div id="panel-hair" class="panel-section">
                 <div class="edit-card">
                     <h4>Nova Postagem Cabelo</h4>
@@ -365,7 +180,7 @@
                 <div id="manager-hair-list"></div>
             </div>
             
-            <!-- PAINEL EMPRESA com ADD FOTOS -->
+            <!-- PAINEL EMPRESA -->
             <div id="panel-company" class="panel-section">
                 <div class="edit-card">
                     <h4>Editar Empresa</h4>
@@ -413,7 +228,7 @@
 </div>
 
 <script>
-    // Firebase Configuration
+    // ==================== CONFIGURAÇÃO FIREBASE ====================
     const firebaseConfig = {
         apiKey: "AIzaSyCWJPvkRuSQMuuVDhdfH6oyLrPPKeAm3n0",
         authDomain: "catalog-lanny-stilit.firebaseapp.com",
@@ -427,6 +242,52 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
+    // ==================== REGRAS DE SEGURANÇA (FIREBASE FIRESTORE) ====================
+    /*
+    Cole este bloco de regras no Firebase Console > Firestore > Regras:
+
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        // Função para verificar se o usuário está autenticado (admin)
+        function isAdmin() {
+          return request.auth != null;
+        }
+        
+        // Coleções públicas (leitura livre, escrita só admin)
+        match /makeup/{document} {
+          allow read: if true;
+          allow write: if isAdmin();
+        }
+        match /hair/{document} {
+          allow read: if true;
+          allow write: if isAdmin();
+        }
+        match /company/{document} {
+          allow read: if true;
+          allow write: if isAdmin();
+        }
+        
+        // Agendamentos: criação pública, mas leitura/edição/delete só admin
+        match /appointments/{document} {
+          allow create: if true;   // qualquer pessoa pode agendar
+          allow read, update, delete: if isAdmin();
+        }
+        
+        // Sangrias e outros dados sensíveis: só admin
+        match /sangrias/{document} {
+          allow read, write: if isAdmin();
+        }
+        
+        // (Opcional) Bloquear qualquer outra coleção não definida
+        match /{document=**} {
+          allow read, write: if false;
+        }
+      }
+    }
+    */
+    
+    // Variáveis globais
     let listMakeup = [];
     let listHair = [];
     let listAppointments = [];
@@ -454,15 +315,23 @@
         const panelUserSpan = document.getElementById('panel-user-email');
         if(user) {
             if(panelUserSpan) panelUserSpan.innerText = user.email || 'Logado';
-            // se estiver no painel, recarrega dados
+            // Carrega dados sensíveis (agendamentos, sangrias) apenas se logado
+            await loadPrivateData();
+            // Se o painel estiver ativo, renderiza
             if(document.getElementById('panel-screen').classList.contains('active')) {
-                await loadData();
                 renderAppointmentsList();
                 renderFinanceiro();
             }
         } else {
             if(panelUserSpan) panelUserSpan.innerText = '';
-            // se o painel estiver aberto, redireciona para main
+            // Limpa dados sensíveis quando desloga
+            listAppointments = [];
+            completedAppointments = [];
+            sangrias = [];
+            if(document.getElementById('appointments-list')) document.getElementById('appointments-list').innerHTML = '<div>Faça login para ver os agendamentos.</div>';
+            if(document.getElementById('lista-sangrias')) document.getElementById('lista-sangrias').innerHTML = '';
+            if(document.getElementById('completed-list-finance')) document.getElementById('completed-list-finance').innerHTML = '';
+            // Se o painel estiver aberto, redireciona para main
             if(document.getElementById('panel-screen').classList.contains('active')) {
                 navigateToMain();
             }
@@ -506,10 +375,9 @@
         const modal = document.getElementById('login-modal');
         if(e.target === modal) modal.style.display = 'none';
     }
-    // --------------------------
 
-    // Carregar dados do Firebase (público)
-    async function loadData() {
+    // Carregar dados públicos (make, hair, company)
+    async function loadPublicData() {
         try {
             const makeupSnapshot = await db.collection('makeup').orderBy('createdAt', 'desc').get();
             listMakeup = [];
@@ -527,6 +395,23 @@
                 const docRef = await db.collection('hair').add(defaultHair);
                 listHair.push({ id: docRef.id, ...defaultHair });
             }
+            const companySnapshot = await db.collection('company').doc('profile').get();
+            if(companySnapshot.exists) {
+                companyData = companySnapshot.data();
+                document.getElementById('company-profile-img').src = companyData.img;
+                document.getElementById('company-profile-desc').innerText = companyData.bio;
+                if(document.getElementById('input-img-company')) document.getElementById('input-img-company').value = companyData.img;
+                if(document.getElementById('input-desc-company')) document.getElementById('input-desc-company').value = companyData.bio;
+            }
+            renderMainGrid('makeup-grid', listMakeup);
+            renderMainGrid('hair-grid', listHair);
+        } catch(error) { console.error("Erro ao carregar dados públicos:", error); }
+    }
+    
+    // Carregar dados privados (agendamentos, sangrias) – apenas se logado
+    async function loadPrivateData() {
+        if (!currentUser) return;
+        try {
             const appointmentsSnapshot = await db.collection('appointments').where('status', '==', 'active').get();
             listAppointments = [];
             appointmentsSnapshot.forEach(doc => { listAppointments.push({ id: doc.id, ...doc.data() }); });
@@ -536,25 +421,9 @@
             const sangriaSnapshot = await db.collection('sangrias').orderBy('data', 'desc').get();
             sangrias = [];
             sangriaSnapshot.forEach(doc => { sangrias.push({ id: doc.id, ...doc.data() }); });
-            const companySnapshot = await db.collection('company').doc('profile').get();
-            if(companySnapshot.exists) {
-                companyData = companySnapshot.data();
-                document.getElementById('company-profile-img').src = companyData.img;
-                document.getElementById('company-profile-desc').innerText = companyData.bio;
-                if(document.getElementById('input-img-company')) document.getElementById('input-img-company').value = companyData.img;
-                if(document.getElementById('input-desc-company')) document.getElementById('input-desc-company').value = companyData.bio;
-            }
-            renderAll();
-        } catch(error) { console.error("Erro ao carregar dados:", error); }
-    }
-    
-    function renderAll() {
-        renderMainGrid('makeup-grid', listMakeup);
-        renderMainGrid('hair-grid', listHair);
-        if(document.getElementById('manager-makeup-list')) renderManagerList('manager-makeup-list', listMakeup, 'make');
-        if(document.getElementById('manager-hair-list')) renderManagerList('manager-hair-list', listHair, 'hair');
-        if(document.getElementById('appointments-list')) renderAppointmentsList();
-        renderFinanceiro();
+            if(document.getElementById('manager-makeup-list')) renderManagerList('manager-makeup-list', listMakeup, 'make');
+            if(document.getElementById('manager-hair-list')) renderManagerList('manager-hair-list', listHair, 'hair');
+        } catch(error) { console.error("Erro ao carregar dados privados:", error); }
     }
     
     function renderMainGrid(gridId, items) {
@@ -577,9 +446,13 @@
     function renderAppointmentsList() { 
         const container = document.getElementById('appointments-list');
         if(!container) return;
-        container.innerHTML = '';
+        if(!currentUser) {
+            container.innerHTML = '<div>🔒 Faça login para visualizar os agendamentos.</div>';
+            return;
+        }
         if(listAppointments.length === 0) { container.innerHTML = '<div>Nenhum agendamento ativo.</div>'; return; }
         listAppointments.sort((a,b) => new Date(a.date+'T'+a.time) - new Date(b.date+'T'+b.time));
+        container.innerHTML = '';
         listAppointments.forEach(app => {
             const formattedDate = app.date.split('-').reverse().join('/');
             let locationHtml = (app.type === 'home') ? `<p>🏠 ${app.address} - ${app.neighborhood}</p>` : '';
@@ -590,6 +463,7 @@
     }
     
     async function confirmarAgendamento(id) {
+        if(!currentUser) { alert('Login necessário.'); return; }
         const app = listAppointments.find(a => a.id === id);
         if(!app) return;
         const formatted = app.date.split('-').reverse().join('/');
@@ -649,13 +523,19 @@
         if(type === 'home' && (!address || !neighborhood)) { alert("Endereço completo"); return; }
         const newBooking = { name, date, time, phone, type, address, neighborhood, desc, valor: null, status: 'active', createdAt: new Date() };
         const docRef = await db.collection('appointments').add(newBooking);
-        listAppointments.push({ id: docRef.id, ...newBooking });
+        // Se o admin estiver logado, atualiza a lista local
+        if(currentUser) {
+            listAppointments.push({ id: docRef.id, ...newBooking });
+            renderAppointmentsList();
+        }
         document.getElementById('booking-name').value = ''; document.getElementById('booking-date').value = ''; document.getElementById('booking-time').value = '';
         document.getElementById('booking-phone').value = ''; document.getElementById('booking-type').value = 'studio'; document.getElementById('booking-address').value = ''; document.getElementById('booking-neighborhood').value = ''; document.getElementById('booking-desc').value = ''; document.getElementById('delivery-fields').style.display = 'none';
-        renderAppointmentsList();
         alert("Agendamento solicitado!");
-        const notif = document.getElementById('notification-bubble');
-        notif.classList.remove('hidden-fixed');
+        // Só mostra notificação se tiver admin logado (para ele saber)
+        if(currentUser) {
+            const notif = document.getElementById('notification-bubble');
+            notif.classList.remove('hidden-fixed');
+        }
         document.getElementById('booking-screen').classList.remove('active');
         document.getElementById('main-screen').classList.add('active');
         toggleFixedButtonsVisibility(true);
@@ -671,7 +551,7 @@
         if(!price.toLowerCase().includes('consulta') && !price.includes('R$')) price = "R$ " + price;
         if(id) { await db.collection('makeup').doc(id).update({ img, title, desc, price }); const item = listMakeup.find(i => i.id === id); if(item) { item.img = img; item.title = title; item.desc = desc; item.price = price; } }
         else { const newItem = { img, title, desc, price, createdAt: new Date() }; const docRef = await db.collection('makeup').add(newItem); listMakeup.push({ id: docRef.id, ...newItem }); }
-        document.getElementById('edit-make-id').value = ''; clearMakeFields(); renderAll(); alert("Salvo"); navigateToMain();
+        document.getElementById('edit-make-id').value = ''; clearMakeFields(); renderMainGrid('makeup-grid', listMakeup); renderManagerList('manager-makeup-list', listMakeup, 'make'); alert("Salvo"); navigateToMain();
     }
     async function saveHairChanges() { if(!currentUser){alert('Login necessário');return;} 
         const id = document.getElementById('edit-hair-id').value;
@@ -682,7 +562,7 @@
         if(!price.toLowerCase().includes('consulta') && !price.includes('R$')) price = "R$ " + price;
         if(id) { await db.collection('hair').doc(id).update({ img, title, desc, price }); const item = listHair.find(i => i.id === id); if(item) { item.img = img; item.title = title; item.desc = desc; item.price = price; } }
         else { const newItem = { img, title, desc, price, createdAt: new Date() }; const docRef = await db.collection('hair').add(newItem); listHair.push({ id: docRef.id, ...newItem }); }
-        clearHairFields(); renderAll(); alert("Salvo"); navigateToMain();
+        clearHairFields(); renderMainGrid('hair-grid', listHair); renderManagerList('manager-hair-list', listHair, 'hair'); alert("Salvo"); navigateToMain();
     }
     async function saveCompanyChanges() { if(!currentUser){alert('Login necessário');return;} 
         const img = document.getElementById('input-img-company').value;
@@ -693,11 +573,16 @@
         document.getElementById('company-profile-desc').innerText = bio;
         alert("Salvo!"); navigateToMain();
     }
-    async function deletePost(type, id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Deletar?")) { if(type === 'make') { await db.collection('makeup').doc(id).delete(); listMakeup = listMakeup.filter(i => i.id !== id); } else { await db.collection('hair').doc(id).delete(); listHair = listHair.filter(i => i.id !== id); } renderAll(); } }
+    async function deletePost(type, id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Deletar?")) { if(type === 'make') { await db.collection('makeup').doc(id).delete(); listMakeup = listMakeup.filter(i => i.id !== id); renderMainGrid('makeup-grid', listMakeup); renderManagerList('manager-makeup-list', listMakeup, 'make'); } else { await db.collection('hair').doc(id).delete(); listHair = listHair.filter(i => i.id !== id); renderMainGrid('hair-grid', listHair); renderManagerList('manager-hair-list', listHair, 'hair'); } } }
     async function registrarSangria() { if(!currentUser){alert('Login necessário');return;} const valor = parseFloat(document.getElementById('sangria-valor').value); const desc = document.getElementById('sangria-desc').value; if(isNaN(valor) || valor <= 0) { alert("Valor inválido"); return; } const newSangria = { valor, desc: desc || "Retirada", data: new Date().toISOString().slice(0,10) }; const docRef = await db.collection('sangrias').add(newSangria); sangrias.push({ id: docRef.id, ...newSangria }); document.getElementById('sangria-valor').value = ''; document.getElementById('sangria-desc').value = ''; renderFinanceiro(); }
     async function deletarSangria(id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Excluir sangria?")) { await db.collection('sangrias').doc(id).delete(); sangrias = sangrias.filter(s => s.id !== id); renderFinanceiro(); } }
     async function deletarConcluido(id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Deletar este serviço concluído?")) { await db.collection('appointments').doc(id).delete(); completedAppointments = completedAppointments.filter(c => c.id !== id); renderFinanceiro(); } }
     function renderFinanceiro() { 
+        if(!currentUser) {
+            const totalEl = document.getElementById('total-receita-mes');
+            if(totalEl) totalEl.innerHTML = '🔒 Faça login para ver o financeiro.';
+            return;
+        }
         const monthFilter = document.getElementById('finance-month-filter')?.value || '';
         let filteredCompleted = [...completedAppointments];
         if(monthFilter) filteredCompleted = filteredCompleted.filter(c => c.date && c.date.startsWith(monthFilter));
@@ -712,12 +597,10 @@
     function enviarComprovante(id) { const item = completedAppointments.find(c => c.id === id); if(!item) return; const dataFormat = item.date.split('-').reverse().join('/'); const msg = `🧾 *COMPROVANTE DE SERVIÇO* 🧾\nCliente: ${item.name}\nData: ${dataFormat} às ${item.time}\nServiço: ${item.desc || 'Maquiagem/Penteado'}\nValor Pago: R$ ${(item.valor || 0).toFixed(2)}\nAgradecemos pela preferência! 💄✨`; const phoneClean = item.phone.replace(/\D/g,''); window.open(`https://wa.me/55${phoneClean}?text=${encodeURIComponent(msg)}`, '_blank'); }
     function startEdit(type, id) { if(type === 'make') { const item = listMakeup.find(i => i.id === id); document.getElementById('edit-make-id').value = item.id; document.getElementById('input-img-make1').value = item.img; document.getElementById('input-title-make1').value = item.title; document.getElementById('input-desc-make1').value = item.desc; document.getElementById('input-price-make1').value = item.price.replace("R$ ", ""); switchPanelTab({currentTarget: document.querySelector(".panel-tab-btn[onclick*='panel-make']")}, 'panel-make'); } else { const item = listHair.find(i => i.id === id); document.getElementById('edit-hair-id').value = item.id; document.getElementById('input-img-hair1').value = item.img; document.getElementById('input-title-hair1').value = item.title; document.getElementById('input-desc-hair1').value = item.desc; document.getElementById('input-price-hair1').value = item.price.replace("R$ ", ""); switchPanelTab({currentTarget: document.querySelector(".panel-tab-btn[onclick*='panel-hair']")}, 'panel-hair'); } }
     
-    // Função melhorada para abrir a galeria do celular
     function abrirGaleria(tipo) {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        // Remove qualquer atributo "capture" para garantir que abra a galeria (e não a câmera)
         input.removeAttribute('capture');
         input.onchange = function(e) {
             const file = e.target.files[0];
@@ -764,7 +647,7 @@
         document.getElementById('drawer-overlay').addEventListener('click', closeMenuFromOverlay);
         toggleFixedButtonsVisibility(true);
         if(document.getElementById('finance-month-filter')) document.getElementById('finance-month-filter').value = new Date().toISOString().slice(0,7);
-        loadData();
+        loadPublicData();  // carrega catálogo e perfil público
         updateLoginLogoutMenu();
     };
 </script>
