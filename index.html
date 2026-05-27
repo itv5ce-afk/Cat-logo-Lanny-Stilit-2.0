@@ -711,9 +711,38 @@
     }
     function enviarComprovante(id) { const item = completedAppointments.find(c => c.id === id); if(!item) return; const dataFormat = item.date.split('-').reverse().join('/'); const msg = `🧾 *COMPROVANTE DE SERVIÇO* 🧾\nCliente: ${item.name}\nData: ${dataFormat} às ${item.time}\nServiço: ${item.desc || 'Maquiagem/Penteado'}\nValor Pago: R$ ${(item.valor || 0).toFixed(2)}\nAgradecemos pela preferência! 💄✨`; const phoneClean = item.phone.replace(/\D/g,''); window.open(`https://wa.me/55${phoneClean}?text=${encodeURIComponent(msg)}`, '_blank'); }
     function startEdit(type, id) { if(type === 'make') { const item = listMakeup.find(i => i.id === id); document.getElementById('edit-make-id').value = item.id; document.getElementById('input-img-make1').value = item.img; document.getElementById('input-title-make1').value = item.title; document.getElementById('input-desc-make1').value = item.desc; document.getElementById('input-price-make1').value = item.price.replace("R$ ", ""); switchPanelTab({currentTarget: document.querySelector(".panel-tab-btn[onclick*='panel-make']")}, 'panel-make'); } else { const item = listHair.find(i => i.id === id); document.getElementById('edit-hair-id').value = item.id; document.getElementById('input-img-hair1').value = item.img; document.getElementById('input-title-hair1').value = item.title; document.getElementById('input-desc-hair1').value = item.desc; document.getElementById('input-price-hair1').value = item.price.replace("R$ ", ""); switchPanelTab({currentTarget: document.querySelector(".panel-tab-btn[onclick*='panel-hair']")}, 'panel-hair'); } }
-    function abrirGaleria(tipo) { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.capture = undefined; input.onchange = function(e) { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = function(event) { const imagemDataURL = event.target.result; if(tipo === 'make') document.getElementById('input-img-make1').value = imagemDataURL; else if(tipo === 'hair') document.getElementById('input-img-hair1').value = imagemDataURL; else if(tipo === 'company') { document.getElementById('input-img-company').value = imagemDataURL; const previewImg = document.getElementById('company-profile-img'); if(previewImg) previewImg.src = imagemDataURL; } }; reader.readAsDataURL(file); } }; input.click(); }
+    
+    // Função melhorada para abrir a galeria do celular
+    function abrirGaleria(tipo) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        // Remove qualquer atributo "capture" para garantir que abra a galeria (e não a câmera)
+        input.removeAttribute('capture');
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imagemDataURL = event.target.result;
+                    if(tipo === 'make') {
+                        document.getElementById('input-img-make1').value = imagemDataURL;
+                    } else if(tipo === 'hair') {
+                        document.getElementById('input-img-hair1').value = imagemDataURL;
+                    } else if(tipo === 'company') {
+                        document.getElementById('input-img-company').value = imagemDataURL;
+                        const previewImg = document.getElementById('company-profile-img');
+                        if(previewImg) previewImg.src = imagemDataURL;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    }
+    
     function clearMakeFields() { document.getElementById('input-img-make1').value = ''; document.getElementById('input-title-make1').value = ''; document.getElementById('input-desc-make1').value = ''; document.getElementById('input-price-make1').value = ''; }
-    function clearHairFields() { document.getElementById('input-img-hair1').value = ''; document.getElementById('input-title-hair1').value = ''; document.getElementById('input-desc-hair1').value = ''; document.getElementById('input-price-make1').value = ''; }
+    function clearHairFields() { document.getElementById('input-img-hair1').value = ''; document.getElementById('input-title-hair1').value = ''; document.getElementById('input-desc-hair1').value = ''; document.getElementById('input-price-hair1').value = ''; }
     function toggleFixedButtonsVisibility(show) { const b = document.getElementById('fixed-booking-btn'); const r = document.getElementById('fixed-buttons-right'); if(show) { b.classList.remove('hidden-fixed'); r.classList.remove('hidden-fixed'); } else { b.classList.add('hidden-fixed'); r.classList.add('hidden-fixed'); } }
     function navigateToBooking() { document.getElementById('main-screen').classList.remove('active'); document.getElementById('booking-screen').classList.add('active'); toggleFixedButtonsVisibility(false); }
     function navigateToMainFromBooking() { document.getElementById('booking-screen').classList.remove('active'); document.getElementById('main-screen').classList.add('active'); toggleFixedButtonsVisibility(true); }
