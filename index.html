@@ -82,7 +82,7 @@
         .total-receita { font-size: 1.2rem; font-weight: bold; background: var(--primary); color: white; padding: 12px; border-radius: 12px; text-align: center; }
         .completed-item { background: #f8f9fa; border-left: 3px solid var(--success-color); padding: 12px; border-radius: 8px; margin-bottom: 10px; }
         .edit-modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:200; display:flex; justify-content:center; align-items:center; }
-        .edit-modal-box { background: white; width: 90%; max-width: 340px; border-radius: 20px; padding: 20px; }
+        .edit-modal-box { background: white; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; max-height: 90vh; overflow-y: auto; }
         .edit-card, .edit-modal-box { background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #eee; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; }
@@ -118,6 +118,8 @@
         .image-group label { font-weight: 600; color: var(--accent); font-size: 0.8rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
         .image-group .mini-btn { margin-top: 8px; }
         .photo-counter { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; z-index: 2; backdrop-filter: blur(4px); }
+        .completed-details { margin-top: 8px; font-size: 0.75rem; color: #444; }
+        .cashback-highlight { color: var(--success-color); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -255,6 +257,27 @@
         </div>
     </div>
 
+    <!-- MODAL DE EDIÇÃO COMPLETA DE AGENDAMENTO -->
+    <div id="edit-appointment-modal" class="edit-modal-overlay" style="display:none;">
+        <div class="edit-modal-box">
+            <h3 style="margin-bottom:15px;">✏️ Editar Agendamento</h3>
+            <input type="hidden" id="edit-app-id">
+            <div class="form-group"><label>Nome do Cliente</label><input type="text" id="edit-app-name"></div>
+            <div class="form-group"><label>Data Atendimento</label><input type="date" id="edit-app-date"></div>
+            <div class="form-group"><label>Hora Atendimento</label><input type="time" id="edit-app-time"></div>
+            <div class="form-group"><label>Tipo de Atendimento</label><select id="edit-app-type"><option value="studio">Estúdio</option><option value="home">Domicílio</option></select></div>
+            <div id="edit-delivery-fields"><div class="form-group"><label>Endereço</label><input type="text" id="edit-app-address"></div><div class="form-group"><label>Bairro</label><input type="text" id="edit-app-neighborhood"></div></div>
+            <div class="form-group"><label>Observações do Serviço</label><textarea id="edit-app-desc" rows="2"></textarea></div>
+            <div class="form-group"><label>Valor Total (R$)</label><input type="number" step="0.01" id="edit-app-valor"></div>
+            <div class="form-group"><label>Desconto em Cashback (%)</label><input type="number" step="0.01" id="edit-app-cashbackPercent" oninput="calcularCashbackSaldo()"></div>
+            <div class="form-group"><label>Saldo em Cashback (R$)</label><input type="text" id="edit-app-cashbackAmount" readonly style="background:#f0f0f0;"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="save-btn" onclick="saveAppointmentChanges()" style="background:var(--success-color);">Salvar Alterações</button>
+                <button class="save-btn" onclick="closeEditModal()" style="background:#6c757d;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <button id="fixed-booking-btn" class="booking-fixed-btn" onclick="navigateToBooking()"><i class="fas fa-calendar-check"></i> Agendar Horário</button>
     <div id="fixed-buttons-right" class="fixed-buttons-container"><div id="notification-bubble" class="notification-bubble hidden-fixed" onclick="dismissNotification(event)"><i class="fas fa-bell"></i> Novo Agendamento!</div><button id="fixed-settings-btn" class="settings-fixed-btn" onclick="toggleSettingsMenu()"><i class="fas fa-cog"></i></button></div>
     <div id="drawer-overlay" class="overlay-drawer"></div>
@@ -289,7 +312,6 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    // Variáveis globais
     let listMakeup = [];
     let listHair = [];
     let listAppointments = [];
@@ -297,7 +319,6 @@
     let companyData = { img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", bio: "Seja bem-vinda ao meu catálogo! Sou especialista em realçar sua beleza natural..." };
     let currentUser = null;
 
-    // Atualiza menu lateral dinamicamente baseado no login
     function updateLoginLogoutMenu() {
         const container = document.getElementById('dynamic-login-logout');
         if(!container) return;
@@ -309,7 +330,6 @@
         }
     }
 
-    // ---------- AUTH ----------
     auth.onAuthStateChanged(async (user) => {
         currentUser = user;
         updateLoginLogoutMenu();
@@ -370,18 +390,17 @@
     window.onclick = function(e) {
         const modal = document.getElementById('login-modal');
         if(e.target === modal) modal.style.display = 'none';
+        const editModal = document.getElementById('edit-appointment-modal');
+        if(e.target === editModal) closeEditModal();
     }
 
-    // ========== FUNÇÃO AUXILIAR: Normalizar imagens (migração de dados antigos) ==========
     function normalizeImages(data) {
-        // Se tem o formato antigo (img) mas não tem img1, migra
         if(data.img && !data.img1) {
             data.img1 = data.img;
             data.img2 = data.img2 || '';
             data.img3 = data.img3 || '';
             data.img4 = data.img4 || '';
         }
-        // Garante que os 4 campos existam
         data.img1 = data.img1 || '';
         data.img2 = data.img2 || '';
         data.img3 = data.img3 || '';
@@ -389,11 +408,9 @@
         return data;
     }
 
-    // ========== FUNÇÃO AUXILIAR: Pegar array de imagens válidas ==========
     function getImagesArray(item) {
         return [item.img1, item.img2, item.img3, item.img4].filter(img => img && img.trim() !== '');    }
 
-    // Carregar dados públicos (make, hair, company)
     async function loadPublicData() {
         try {
             const makeupSnapshot = await db.collection('makeup').orderBy('createdAt', 'desc').get();
@@ -448,16 +465,25 @@
         } catch(error) { console.error("Erro ao carregar dados públicos:", error); }
     }
     
-    // Carregar dados privados (agendamentos, sangrias) – apenas se logado
     async function loadPrivateData() {
         if (!currentUser) return;
         try {
             const appointmentsSnapshot = await db.collection('appointments').where('status', '==', 'active').get();
             listAppointments = [];
-            appointmentsSnapshot.forEach(doc => { listAppointments.push({ id: doc.id, ...doc.data() }); });
+            appointmentsSnapshot.forEach(doc => { 
+                let data = doc.data();
+                if(data.cashbackPercent === undefined) data.cashbackPercent = 0;
+                if(data.cashbackAmount === undefined) data.cashbackAmount = 0;
+                listAppointments.push({ id: doc.id, ...data }); 
+            });
             const completedSnapshot = await db.collection('appointments').where('status', '==', 'completed').get();
             completedAppointments = [];
-            completedSnapshot.forEach(doc => { completedAppointments.push({ id: doc.id, ...doc.data() }); });
+            completedSnapshot.forEach(doc => { 
+                let data = doc.data();
+                if(data.cashbackPercent === undefined) data.cashbackPercent = 0;
+                if(data.cashbackAmount === undefined) data.cashbackAmount = 0;
+                completedAppointments.push({ id: doc.id, ...data }); 
+            });
             const sangriaSnapshot = await db.collection('sangrias').orderBy('data', 'desc').get();
             sangrias = [];
             sangriaSnapshot.forEach(doc => { sangrias.push({ id: doc.id, ...doc.data() }); });
@@ -466,7 +492,6 @@
         } catch(error) { console.error("Erro ao carregar dados privados:", error); }
     }
     
-    // ========== RENDERIZAR GRID PRINCIPAL COM GALERIA DE 4 FOTOS ==========
     function renderMainGrid(gridId, items) {
         const grid = document.getElementById(gridId);
         if(!grid) return;
@@ -476,7 +501,6 @@
             const images = getImagesArray(item);
             const mainImg = images[0] || '';
             const totalPhotos = images.length;
-            
             let thumbnailsHtml = '';
             if(totalPhotos > 1) {
                 thumbnailsHtml = `<div class="thumbnails">`;
@@ -485,9 +509,7 @@
                 });
                 thumbnailsHtml += `</div>`;
             }
-            
             const counterHtml = totalPhotos > 1 ? `<div class="photo-counter"><i class="fas fa-images"></i> ${totalPhotos} fotos</div>` : '';
-            
             grid.innerHTML += `
                 <div class="card">                    <div class="card-gallery">
                         ${counterHtml}
@@ -503,7 +525,6 @@
         });
     }
     
-    // ========== TROCAR IMAGEM PRINCIPAL VIA THUMBNAIL ==========
     function swapImage(event, itemId, idx, src) {
         event.stopPropagation();
         const mainImg = document.getElementById(`main-img-${itemId}`);
@@ -557,8 +578,58 @@
             let locationHtml = (app.type === 'home') ? `<p>🏠 ${app.address} - ${app.neighborhood}</p>` : '';
             const phoneClean = app.phone.replace(/\D/g,'');
             const waLink = `https://wa.me/55${phoneClean}?text=Olá ${app.name}`;
-            container.innerHTML += `<div class="appointment-card"><div class="appointment-card-header"><h5>${app.name}</h5><span class="appointment-badge ${app.type==='home'?'badge-home':'badge-studio'}">${app.type==='home'?'Domicílio':'Estúdio'}</span></div><div><p>📅 ${formattedDate} às ${app.time}</p><p>📞 +55 ${app.phone}</p>${locationHtml}${app.desc?`<div class="appointment-notes">${app.desc}</div>`:''}</div><div class="appointment-actions"><button class="mini-btn btn-wa" onclick="window.open('${waLink}','_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="mini-btn btn-confirm" onclick="confirmarAgendamento('${app.id}')"><i class="fas fa-check-circle"></i> Confirmar</button><button class="mini-btn btn-edit-app" onclick="editarAgendamento('${app.id}')"><i class="fas fa-edit"></i> Editar</button><button class="mini-btn btn-finish" onclick="concluirAgendamento('${app.id}')"><i class="fas fa-dollar-sign"></i> Concluir</button></div></div>`;
+            container.innerHTML += `<div class="appointment-card"><div class="appointment-card-header"><h5>${app.name}</h5><span class="appointment-badge ${app.type==='home'?'badge-home':'badge-studio'}">${app.type==='home'?'Domicílio':'Estúdio'}</span></div><div><p>📅 ${formattedDate} às ${app.time}</p><p>📞 +55 ${app.phone}</p>${locationHtml}${app.desc?`<div class="appointment-notes">${app.desc}</div>`:''}<p><strong>Valor:</strong> R$ ${app.valor ? parseFloat(app.valor).toFixed(2) : '0,00'} | <strong>Cashback %:</strong> ${app.cashbackPercent || 0}%</p></div><div class="appointment-actions"><button class="mini-btn btn-wa" onclick="window.open('${waLink}','_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="mini-btn btn-confirm" onclick="confirmarAgendamento('${app.id}')"><i class="fas fa-check-circle"></i> Confirmar</button><button class="mini-btn btn-edit-app" onclick="openEditAppointmentModal('${app.id}')"><i class="fas fa-edit"></i> Editar</button><button class="mini-btn btn-finish" onclick="concluirAgendamento('${app.id}')"><i class="fas fa-dollar-sign"></i> Concluir</button></div></div>`;
         });
+    }
+
+    function openEditAppointmentModal(id) {
+        const app = listAppointments.find(a => a.id === id);
+        if(!app) return;
+        document.getElementById('edit-app-id').value = app.id;
+        document.getElementById('edit-app-name').value = app.name || '';
+        document.getElementById('edit-app-date').value = app.date || '';
+        document.getElementById('edit-app-time').value = app.time || '';
+        document.getElementById('edit-app-type').value = app.type || 'studio';
+        document.getElementById('edit-app-address').value = app.address || '';
+        document.getElementById('edit-app-neighborhood').value = app.neighborhood || '';
+        document.getElementById('edit-app-desc').value = app.desc || '';
+        document.getElementById('edit-app-valor').value = app.valor || '';
+        document.getElementById('edit-app-cashbackPercent').value = app.cashbackPercent || 0;
+        calcularCashbackSaldo();
+        document.getElementById('edit-appointment-modal').style.display = 'flex';
+    }
+
+    function calcularCashbackSaldo() {
+        const valorTotal = parseFloat(document.getElementById('edit-app-valor').value) || 0;
+        const percent = parseFloat(document.getElementById('edit-app-cashbackPercent').value) || 0;
+        const saldo = (percent / 100) * valorTotal;
+        document.getElementById('edit-app-cashbackAmount').value = saldo.toFixed(2);
+    }
+
+    async function saveAppointmentChanges() {
+        const id = document.getElementById('edit-app-id').value;
+        const name = document.getElementById('edit-app-name').value;
+        const date = document.getElementById('edit-app-date').value;
+        const time = document.getElementById('edit-app-time').value;
+        const type = document.getElementById('edit-app-type').value;
+        const address = document.getElementById('edit-app-address').value;
+        const neighborhood = document.getElementById('edit-app-neighborhood').value;
+        const desc = document.getElementById('edit-app-desc').value;
+        const valor = parseFloat(document.getElementById('edit-app-valor').value) || 0;
+        const cashbackPercent = parseFloat(document.getElementById('edit-app-cashbackPercent').value) || 0;
+        const cashbackAmount = (cashbackPercent / 100) * valor;
+        const updateData = { name, date, time, type, address, neighborhood, desc, valor, cashbackPercent, cashbackAmount };
+        await db.collection('appointments').doc(id).update(updateData);
+        const index = listAppointments.findIndex(a => a.id === id);
+        if(index !== -1) listAppointments[index] = { ...listAppointments[index], ...updateData };
+        renderAppointmentsList();
+        renderFinanceiro();
+        closeEditModal();
+        alert("Alterações salvas!");
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-appointment-modal').style.display = 'none';
     }
     
     async function confirmarAgendamento(id) {
@@ -570,24 +641,6 @@
         const phoneClean = app.phone.replace(/\D/g,'');
         window.open(`https://wa.me/55${phoneClean}?text=${encodeURIComponent(msg)}`, '_blank');
     }
-    
-    async function editarAgendamento(id) {
-        if(!currentUser){ alert('Login necessário para editar.'); return; }
-        const app = listAppointments.find(a => a.id === id);
-        if(!app) return;
-        const novoValor = prompt("Informe o VALOR do serviço (R$):", app.valor || "");
-        if(novoValor !== null) app.valor = novoValor.replace(',','.');
-        const novoNome = prompt("Editar nome:", app.name);
-        if(novoNome) app.name = novoNome;
-        const novaData = prompt("Editar data (AAAA-MM-DD):", app.date);
-        if(novaData) app.date = novaData;
-        const novaHora = prompt("Editar horário:", app.time);
-        if(novaHora) app.time = novaHora;
-        const novoPhone = prompt("Editar telefone:", app.phone);
-        if(novoPhone) app.phone = novoPhone;
-        await db.collection('appointments').doc(id).update({ valor: app.valor, name: app.name, date: app.date, time: app.time, phone: app.phone });
-        renderAppointmentsList();
-        renderFinanceiro();    }
     
     async function concluirAgendamento(id) {
         if(!currentUser){ alert('Login necessário.'); return; }
@@ -619,7 +672,7 @@
         const desc = document.getElementById('booking-desc').value.trim();
         if(!name || !date || !time || !phone) { alert("Preencha os obrigatórios"); return; }
         if(type === 'home' && (!address || !neighborhood)) { alert("Endereço completo"); return; }
-        const newBooking = { name, date, time, phone, type, address, neighborhood, desc, valor: null, status: 'active', createdAt: new Date() };
+        const newBooking = { name, date, time, phone, type, address, neighborhood, desc, valor: null, status: 'active', createdAt: new Date(), cashbackPercent: 0, cashbackAmount: 0 };
         const docRef = await db.collection('appointments').add(newBooking);
         if(currentUser) {
             listAppointments.push({ id: docRef.id, ...newBooking });
@@ -637,7 +690,7 @@
         toggleFixedButtonsVisibility(true);
         window.open(`https://wa.me/558599415246?text=${encodeURIComponent("Olá Lanny, acabei de fazer um Agendamento no App!!")}`, '_blank');
     }    
-    // ========== SALVAR MAKEUP COM 4 FOTOS ==========
+    
     async function saveMakeupChanges() { 
         if(!currentUser){alert('Login necessário');return;} 
         const id = document.getElementById('edit-make-id').value;
@@ -648,12 +701,9 @@
         const title = document.getElementById('input-title-make1').value;
         const desc = document.getElementById('input-desc-make1').value;
         let price = document.getElementById('input-price-make1').value;
-        
         if(!img1) { alert('A Foto 1 (Principal) é obrigatória!'); return; }
         if(!title) { alert('O título é obrigatório!'); return; }
-        
         if(!price.toLowerCase().includes('consulta') && !price.includes('R$')) price = "R$ " + price;
-        
         if(id) { 
             await db.collection('makeup').doc(id).update({ img1, img2, img3, img4, title, desc, price }); 
             const item = listMakeup.find(i => i.id === id); 
@@ -674,7 +724,6 @@
         navigateToMain();
     }
 
-    // ========== SALVAR HAIR COM 4 FOTOS ==========
     async function saveHairChanges() { 
         if(!currentUser){alert('Login necessário');return;} 
         const id = document.getElementById('edit-hair-id').value;
@@ -685,11 +734,9 @@
         const title = document.getElementById('input-title-hair1').value;
         const desc = document.getElementById('input-desc-hair1').value;
         let price = document.getElementById('input-price-hair1').value;
-                if(!img1) { alert('A Foto 1 (Principal) é obrigatória!'); return; }
+        if(!img1) { alert('A Foto 1 (Principal) é obrigatória!'); return; }
         if(!title) { alert('O título é obrigatório!'); return; }
-        
         if(!price.toLowerCase().includes('consulta') && !price.includes('R$')) price = "R$ " + price;
-        
         if(id) { 
             await db.collection('hair').doc(id).update({ img1, img2, img3, img4, title, desc, price }); 
             const item = listHair.find(i => i.id === id); 
@@ -739,6 +786,19 @@
     async function deletarSangria(id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Excluir sangria?")) { await db.collection('sangrias').doc(id).delete(); sangrias = sangrias.filter(s => s.id !== id); renderFinanceiro(); } }
     async function deletarConcluido(id) { if(!currentUser){alert('Login necessário');return;} if(confirm("Deletar este serviço concluído?")) { await db.collection('appointments').doc(id).delete(); completedAppointments = completedAppointments.filter(c => c.id !== id); renderFinanceiro(); } }
     
+    function enviarComprovanteCompleto(id) {
+        const item = completedAppointments.find(c => c.id === id);
+        if(!item) return;
+        const dataFormat = item.date.split('-').reverse().join('/');
+        const local = item.type === 'home' ? `${item.address}, ${item.neighborhood}` : 'Estúdio Lanny';
+        const valorTotal = item.valor ? parseFloat(item.valor).toFixed(2) : '0,00';
+        const cashbackPercent = item.cashbackPercent || 0;
+        const cashbackAmount = item.cashbackAmount ? parseFloat(item.cashbackAmount).toFixed(2) : '0,00';
+        const msg = `✅ *PAGAMENTO CONFIRMADO!*\n\n*Nome:* ${item.name}\n*Data Atendimento:* ${dataFormat}\n*Hora Atendimento:* ${item.time}\n*Local de Atendimento:* ${local}\n*Observações do Serviço:* ${item.desc || 'Nenhuma'}\n*Valor Total (R$):* R$ ${valorTotal}\n*Desconto em Cashback %:* ${cashbackPercent}%\n*Saldo Em Cashback (R$):* R$ ${cashbackAmount}\n\nAgradecemos pela preferência! 💄✨`;
+        const phoneClean = item.phone.replace(/\D/g,'');
+        window.open(`https://wa.me/55${phoneClean}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+    
     function renderFinanceiro() { 
         if(!currentUser) {
             const totalEl = document.getElementById('total-receita-mes');
@@ -754,12 +814,26 @@
         const saldoLiquido = totalMes - totalSangrias;
         const totalEl = document.getElementById('total-receita-mes'); if(totalEl) totalEl.innerHTML = `💰 Total Bruto: R$ ${totalMes.toFixed(2)} | 🧾 Sangrias: R$ ${totalSangrias.toFixed(2)}<br>📌 Saldo Líquido: R$ ${saldoLiquido.toFixed(2)}`;
         const sangriaDiv = document.getElementById('lista-sangrias'); if(sangriaDiv) { sangriaDiv.innerHTML = `<strong>Histórico Sangrias:</strong>`; sangriasFiltradas.forEach(s => { sangriaDiv.innerHTML += `<div style="background:#fff; margin:5px 0; padding:8px; border-radius:8px;">R$ ${s.valor.toFixed(2)} - ${s.desc || 'Sem desc'} (${s.data}) <button class="mini-btn" style="background:gray;" onclick="deletarSangria('${s.id}')">🗑️</button></div>`; }); }
-        const completedDiv = document.getElementById('completed-list-finance'); if(completedDiv) { completedDiv.innerHTML = `<strong>Serviços finalizados (mês selecionado):</strong>`; filteredCompleted.forEach(c => { const dateBr = c.date.split('-').reverse().join('/'); completedDiv.innerHTML += `<div class="completed-item"><div><b>${c.name}</b> - ${dateBr} ${c.time}</div><div>💰 R$ ${(c.valor || 0).toFixed(2)}</div><div class="appointment-actions" style="margin-top:6px;"><button class="mini-btn btn-wa" onclick="enviarComprovante('${c.id}')"><i class="fas fa-receipt"></i> Comprovante</button><button class="mini-btn" style="background:red;" onclick="deletarConcluido('${c.id}')">Deletar</button></div></div>`; }); }
+        const completedDiv = document.getElementById('completed-list-finance'); if(completedDiv) { 
+            completedDiv.innerHTML = `<strong>Serviços finalizados (mês selecionado):</strong>`;
+            filteredCompleted.forEach(c => { 
+                const dateBr = c.date.split('-').reverse().join('/');
+                const local = c.type === 'home' ? `${c.address || ''} ${c.neighborhood || ''}` : 'Estúdio';
+                completedDiv.innerHTML += `<div class="completed-item">
+                    <div><b>${c.name}</b> - ${dateBr} ${c.time}</div>
+                    <div>📍 ${local}</div>
+                    <div>📝 ${c.desc || 'Nenhuma obs'}</div>
+                    <div>💰 Valor Total: R$ ${(c.valor || 0).toFixed(2)}</div>
+                    <div>🎁 Desconto Cashback: ${c.cashbackPercent || 0}% | Saldo: R$ ${(c.cashbackAmount || 0).toFixed(2)}</div>
+                    <div class="appointment-actions" style="margin-top:6px;">
+                        <button class="mini-btn btn-wa" onclick="enviarComprovanteCompleto('${c.id}')"><i class="fas fa-receipt"></i> Comprovante</button>
+                        <button class="mini-btn" style="background:red;" onclick="deletarConcluido('${c.id}')">Deletar</button>
+                    </div>
+                </div>`; 
+            }); 
+        }
     }
 
-    function enviarComprovante(id) { const item = completedAppointments.find(c => c.id === id); if(!item) return; const dataFormat = item.date.split('-').reverse().join('/'); const msg = `🧾 *COMPROVANTE DE SERVIÇO* 🧾\nCliente: ${item.name}\nData: ${dataFormat} às ${item.time}\nServiço: ${item.desc || 'Maquiagem/Penteado'}\nValor Pago: R$ ${(item.valor || 0).toFixed(2)}\nAgradecemos pela preferência! 💄✨`; const phoneClean = item.phone.replace(/\D/g,''); window.open(`https://wa.me/55${phoneClean}?text=${encodeURIComponent(msg)}`, '_blank'); }
-
-    // ========== START EDIT CARREGA AS 4 FOTOS ==========
     function startEdit(type, id) { 
         if(type === 'make') { 
             const item = listMakeup.find(i => i.id === id); 
@@ -785,16 +859,13 @@
             switchPanelTab({currentTarget: document.querySelector(".panel-tab-btn[onclick*='panel-hair']")}, 'panel-hair'); 
         }     }
     
-    // ========== ABRIR GALERIA ACEITA NÚMERO DA FOTO ==========
     function abrirGaleria(tipo, numFoto) {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        input.removeAttribute('capture');
         input.onchange = function(e) {
             const file = e.target.files[0];
             if(file) {
-                // Verifica tamanho (max 2MB para não estourar Firestore)
                 if(file.size > 2 * 1024 * 1024) {
                     alert('⚠️ Imagem muito grande! Máximo 2MB. Use uma imagem menor.');
                     return;
@@ -818,7 +889,6 @@
         input.click();
     }
     
-    // ========== LIMPAR CAMPOS - 4 FOTOS ==========
     function clearMakeFields() { 
         document.getElementById('input-img-make1').value = ''; 
         document.getElementById('input-img-make2').value = ''; 
@@ -863,4 +933,4 @@
     };
 </script>
 </body>
-                                                                                                                                                             </html>
+</html>
