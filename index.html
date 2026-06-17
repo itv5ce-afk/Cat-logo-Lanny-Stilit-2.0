@@ -132,10 +132,65 @@
         .image-group { border: 1px dashed #d4af37; padding: 12px; border-radius: 12px; margin-bottom: 12px; background: linear-gradient(135deg, #fffdf5, #fff9e6); }
         .image-group label { font-weight: 600; color: var(--accent); font-size: 0.8rem; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
         .photo-counter { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; z-index: 2; backdrop-filter: blur(4px); }
+
+        /* ========== SPLASH SCREEN ========== */
+        #splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            border-radius: 30px;
+            transition: opacity 0.6s ease;
+        }
+        #splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .splash-content {
+            text-align: center;
+            color: #fff;
+            padding: 20px;
+        }
+        .splash-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.2rem;
+            font-weight: 400;
+            letter-spacing: 4px;
+            color: #d4af37;
+            animation: pulseSplash 1.2s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
+        .splash-sub {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 10px;
+        }
+        @keyframes pulseSplash {
+            0% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.08); opacity: 1; text-shadow: 0 0 50px rgba(212, 175, 55, 0.6); }
+            100% { transform: scale(1); opacity: 0.9; }
+        }
     </style>
 </head>
 <body>
 <div class="mobile-container">
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <div class="splash-title">Lanny Stilit</div>
+            <div class="splash-sub">Make-up &amp; Hair Stylist</div>
+        </div>
+    </div>
+
     <!-- NOVO LIGHTBOX COM ZOOM E SWIPE -->
     <div id="lightbox-modal" class="fullscreen-modal" onclick="closeLightboxOnBackground(event)">
         <div class="lightbox-container">
@@ -471,7 +526,25 @@
     function switchPanelTab(evt,sectionId){ document.querySelectorAll('.panel-section').forEach(s=>s.classList.remove('active')); document.querySelectorAll('.panel-tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(sectionId).classList.add('active'); evt.currentTarget.classList.add('active'); if(sectionId==='panel-finance') renderFinanceiro(); }
     function toggleSettingsMenu(){ document.getElementById('settings-drawer').classList.toggle('open'); const ov=document.getElementById('drawer-overlay'); ov.style.display=document.getElementById('settings-drawer').classList.contains('open')?'block':'none'; }
     function dismissNotification(e){ e.stopPropagation(); document.getElementById('notification-bubble').classList.add('hidden-fixed'); }
-    window.onload=function(){ document.getElementById('drawer-overlay').addEventListener('click',()=>toggleSettingsMenu()); toggleFixedButtonsVisibility(true); if(document.getElementById('finance-month-filter')) document.getElementById('finance-month-filter').value=new Date().toISOString().slice(0,7); loadPublicData(); updateLoginLogoutMenu(); };
+
+    window.onload=function(){
+        // Lógica da Splash
+        setTimeout(function() {
+            const splash = document.getElementById('splash-screen');
+            if(splash) splash.classList.add('hidden');
+            // Opcionalmente remover do DOM após transição
+            setTimeout(function() {
+                if(splash) splash.style.display = 'none';
+            }, 700);
+        }, 5000); // 5 segundos
+
+        // Configurações iniciais
+        document.getElementById('drawer-overlay').addEventListener('click',()=>toggleSettingsMenu());
+        toggleFixedButtonsVisibility(true);
+        if(document.getElementById('finance-month-filter')) document.getElementById('finance-month-filter').value=new Date().toISOString().slice(0,7);
+        loadPublicData();
+        updateLoginLogoutMenu();
+    };
 </script>
 </body>
 </html>
